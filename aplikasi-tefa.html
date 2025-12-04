@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aplikasi TEFA - SMK ARTANITA</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #f4f4f4;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+        }
+
+        .btn-login {
+            background: #2980b9;
+            color: white;
+            border: none;
+            padding: 10px;
+            width: 100%;
+            margin-top: 15px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        header {
+            background: #2c3e50;
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+        }
+
+        header img {
+            height: 60px;
+            margin-right: 15px;
+        }
+
+        header div {
+            display: flex;
+            flex-direction: column;
+        }
+
+        header h1, header p {
+            margin: 0;
+        }
+
+        nav {
+            background: #34495e;
+            padding: 10px;
+            text-align: center;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            margin: 0 15px;
+            font-weight: bold;
+        }
+
+        .container {
+            padding: 20px;
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        table, th, td {
+            border: 1px solid #ccc;
+        }
+
+        th, td {
+            padding: 10px;
+        }
+
+        th {
+            background: #e2e2e2;
+        }
+
+        .btn-beli {
+            background: #27ae60;
+            color: white;
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .btn-checkout {
+            background: #e67e22;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+
+        .btn-disabled {
+            background: gray !important;
+            cursor: not-allowed !important;
+        }
+
+        footer {
+            background: #2c3e50;
+            color: white;
+            text-align: center;
+            padding: 10px 0;
+            margin-top: 20px;
+        }
+    </style>
+
+    <script>
+        // ============================
+        // DATA PRODUK + STOK
+        // ============================
+        let produk = {
+            makanan: [
+                { nama: "Kripik Pedas", harga: 2000, stok: 10 },
+                { nama: "Permen", harga: 1000, stok: 8 },
+                { nama: "Roti", harga: 3000, stok: 10 },
+                { nama: "Ciki", harga: 2000, stok: 20 }
+            ],
+            minuman: [
+                { nama: "Ale-Ale", harga: 1000, stok: 15 },
+                { nama: "Susu Milku", harga: 3000, stok: 8 },
+                { nama: "Teh Kotak", harga: 5000, stok: 5 },
+                { nama: "Aqua Gelas", harga: 500, stok: 25 }
+            ]
+        };
+
+        let keranjang = [];
+        let totalHarga = 0;
+
+        // ============================
+        // TAMBAH KE KERANJANG
+        // ============================
+        function tambahKeranjang(kategori, index) {
+            let item = produk[kategori][index];
+
+            if (item.stok <= 0) {
+                alert("Stok habis!");
+                return;
+            }
+
+            // masukkan ke keranjang
+            keranjang.push({ nama: item.nama, harga: item.harga });
+            totalHarga += item.harga;
+
+            // kurangi stok
+            item.stok--;
+
+            updateKeranjang();
+            updateTabel();
+
+            alert(item.nama + " ditambahkan ke keranjang!");
+        }
+
+        // ============================
+        // UPDATE KERANJANG
+        // ============================
+        function updateKeranjang() {
+            let tabel = document.getElementById("tabel-keranjang");
+            tabel.innerHTML = "";
+
+            keranjang.forEach((item, index) => {
+                tabel.innerHTML += `
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td>${item.nama}</td>
+                        <td>Rp${item.harga}</td>
+                    </tr>
+                `;
+            });
+
+            document.getElementById("total-harga").innerText = "Rp" + totalHarga;
+        }
+
+        // ============================
+        // UPDATE TABEL PRODUK (STOK)
+        // ============================
+        function updateTabel() {
+            // update makanan
+            produk.makanan.forEach((item, i) => {
+                document.getElementById("stok-makanan-" + i).innerText = item.stok;
+
+                if (item.stok <= 0) {
+                    document.getElementById("btn-makanan-" + i).classList.add("btn-disabled");
+                    document.getElementById("btn-makanan-" + i).innerText = "Habis";
+                    document.getElementById("btn-makanan-" + i).disabled = true;
+                }
+            });
+
+            // update minuman
+            produk.minuman.forEach((item, i) => {
+                document.getElementById("stok-minuman-" + i).innerText = item.stok;
+
+                if (item.stok <= 0) {
+                    document.getElementById("btn-minuman-" + i).classList.add("btn-disabled");
+                    document.getElementById("btn-minuman-" + i).innerText = "Habis";
+                    document.getElementById("btn-minuman-" + i).disabled = true;
+                }
+            });
+        }
+
+        // ============================
+        // CHECKOUT
+        // ============================
+        function checkout() {
+            if (keranjang.length === 0) {
+                alert("Keranjang masih kosong!");
+                return;
+            }
+
+            let konfirmasi = confirm("Yakin ingin checkout semua barang?");
+            if (konfirmasi) {
+                alert("Pembelian berhasil!");
+
+                keranjang = [];
+                totalHarga = 0;
+                updateKeranjang();
+            }
+        }
+
+        // otomatis update stok saat awal load
+        window.onload = updateTabel;
+    </script>
+</head>
+
+<body>
+
+
+    <div>
+        <h1>Aplikasi TEFA</h1>
+        <p><strong>SMK ARTANITA</strong></p>
+    </div>
+</header>
+
+<nav>
+    <a href="#makanan">Makanan</a>
+    <a href="#minuman">Minuman</a>
+    <a href="#keranjang">Keranjang</a>
+</nav>
+
+<div class="container">
+
+    <!-- ============================
+         MAKANAN
+    ============================= -->
+    <div class="card" id="makanan">
+        <h2>Daftar Makanan</h2>
+        <table>
+            <tr>
+                <th>Nama Makanan</th>
+                <th>Harga</th>
+                <th>Stok</th>
+                <th>Aksi</th>
+            </tr>
+
+            <!-- LIST MAKANAN -->
+            <script>
+                produk.makanan.forEach((item, i) => {
+                    document.write(`
+                        <tr>
+                            <td>${item.nama}</td>
+                            <td>Rp${item.harga}</td>
+                            <td id="stok-makanan-${i}">${item.stok}</td>
+                            <td>
+                                <button id="btn-makanan-${i}" class="btn-beli" onclick="tambahKeranjang('makanan', ${i})">
+                                    Tambah
+                                </button>
+                            </td>
+                        </tr>
+                    `);
+                });
+            </script>
+
+        </table>
+    </div>
+
+    <!-- ============================
+         MINUMAN
+    ============================= -->
+    <div class="card" id="minuman">
+        <h2>Daftar Minuman</h2>
+        <table>
+            <tr>
+                <th>Nama Minuman</th>
+                <th>Harga</th>
+                <th>Stok</th>
+                <th>Aksi</th>
+            </tr>
+
+            <!-- LIST MINUMAN -->
+            <script>
+                produk.minuman.forEach((item, i) => {
+                    document.write(`
+                        <tr>
+                            <td>${item.nama}</td>
+                            <td>Rp${item.harga}</td>
+                            <td id="stok-minuman-${i}">${item.stok}</td>
+                            <td>
+                                <button id="btn-minuman-${i}" class="btn-beli" onclick="tambahKeranjang('minuman', ${i})">
+                                    Tambah
+                                </button>
+                            </td>
+                        </tr>
+                    `);
+                });
+            </script>
+
+        </table>
+    </div>
+
+    <!-- ============================
+         KERANJANG
+    ============================= -->
+    <div class="card" id="keranjang">
+        <h2>Keranjang Belanja</h2>
+        <table>
+            <tr>
+                <th>No</th>
+                <th>Nama Barang</th>
+                <th>Harga</th>
+            </tr>
+            <tbody id="tabel-keranjang"></tbody>
+        </table>
+
+        <h3>Total Harga: <span id="total-harga">Rp0</span></h3>
+        <button class="btn-checkout" onclick="checkout()">Checkout</button>
+    </div>
+
+</div>
+
+<footer>
+    <p>&copy; 2025 Aplikasi TEFA - SMK ARTANITA</p>
+</footer>
+
+</body>
+</html>
